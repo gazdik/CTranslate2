@@ -88,14 +88,14 @@ namespace ctranslate2 {
         for (dim_t b = 0; b < batch_size; ++b) {
           for (dim_t o = 0; o < output_length; ++o) {
             for (dim_t c = 0; c < input_depth; ++c) {
-              T sum = bias_data ? bias_data[c] : T(0);
+              float sum = bias_data ? float(bias_data[c]) : 0.0f;
               
               for (dim_t k = 0; k < kernel_size; ++k) {
                 const dim_t input_pos = o * _stride - _padding + k * _dilation;
                 if (input_pos >= 0 && input_pos < input_length) {
                   const dim_t input_idx = b * input_length * input_depth + input_pos * input_depth + c;
                   const dim_t weight_idx = k * input_depth + c;
-                  sum += T(input_data[input_idx] * weight_data[weight_idx]);
+                  sum += float(input_data[input_idx]) * float(weight_data[weight_idx]);
                 }
               }
               
