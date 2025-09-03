@@ -54,7 +54,8 @@ namespace ctranslate2 {
       const dim_t seq_len = queries.dim(1);
       const dim_t head_dim = queries.dim(2) / _num_heads;
 
-      const T scale = _scale > 0 ? _scale : T(1) / std::sqrt(static_cast<T>(head_dim));
+      const float scale_f = _scale > 0 ? _scale : 1.0f / std::sqrt(static_cast<float>(head_dim));
+      const T scale = static_cast<T>(scale_f);
 
       output = StorageView(queries.shape(), queries.dtype(), queries.device());
 
@@ -79,25 +80,25 @@ namespace ctranslate2 {
               }
 
               // Compute attention scores
-              std::vector<T> scores(end_pos - start_pos);
-              T max_score = std::numeric_limits<T>::lowest();
+              std::vector<float> scores(end_pos - start_pos);
+              float max_score = std::numeric_limits<float>::lowest();
               
               for (dim_t j = start_pos; j < end_pos; ++j) {
-                T score = T(0);
+                float score = 0.0f;
                 for (dim_t d = 0; d < head_dim; ++d) {
                   const dim_t q_idx = b * seq_len * _num_heads * head_dim + 
                                       i * _num_heads * head_dim + h * head_dim + d;
                   const dim_t k_idx = b * seq_len * _num_heads * head_dim + 
                                       j * _num_heads * head_dim + h * head_dim + d;
-                  score += q_data[q_idx] * k_data[k_idx];
+                  score += static_cast<float>(q_data[q_idx]) * static_cast<float>(k_data[k_idx]);
                 }
-                score *= scale;
+                score *= scale_f;
                 scores[j - start_pos] = score;
                 max_score = std::max(max_score, score);
               }
 
               // Apply softmax
-              T sum_exp = T(0);
+              float sum_exp = 0.0f;
               for (auto& score : scores) {
                 score = std::exp(score - max_score);
                 sum_exp += score;
@@ -108,15 +109,15 @@ namespace ctranslate2 {
 
               // Compute weighted sum of values
               for (dim_t d = 0; d < head_dim; ++d) {
-                T result = T(0);
+                float result = 0.0f;
                 for (dim_t j = start_pos; j < end_pos; ++j) {
                   const dim_t v_idx = b * seq_len * _num_heads * head_dim + 
                                       j * _num_heads * head_dim + h * head_dim + d;
-                  result += scores[j - start_pos] * v_data[v_idx];
+                  result += scores[j - start_pos] * static_cast<float>(v_data[v_idx]);
                 }
                 const dim_t out_idx = b * seq_len * _num_heads * head_dim + 
                                       i * _num_heads * head_dim + h * head_dim + d;
-                out_data[out_idx] = result;
+                out_data[out_idx] = static_cast<T>(result);
               }
             }
           }
