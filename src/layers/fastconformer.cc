@@ -166,7 +166,7 @@ namespace ctranslate2 {
       const bool use_global_token = model.config.value("encoder/use_global_token", false);
       const dim_t batch_size = model.config.value("batch_size", 1);
       
-      _layers.reserve(num_layers);
+      _layers.reserve(static_cast<size_t>(num_layers));
       for (dim_t b = 0; b < batch_size; ++b) {
         for (dim_t i = 0; i < num_layers; ++i) {
           const std::string layer_scope = scope + "/layers/" + std::to_string(static_cast<int>(i));

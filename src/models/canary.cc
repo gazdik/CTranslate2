@@ -102,7 +102,7 @@ namespace ctranslate2 {
                                     " features, but got " + std::to_string(static_cast<int>(feature_dim)));
       }
 
-      StorageView lengths({batch_size}, DataType::INT32, device);
+      StorageView lengths({static_cast<dim_t>(batch_size)}, DataType::INT32, device);
       lengths.fill(static_cast<int32_t>(time_dim));
 
       StorageView encoded(dtype, device);
@@ -190,18 +190,18 @@ namespace ctranslate2 {
       const dim_t batch_size = features.dim(0);
       
       StorageView memory = maybe_encode(std::move(features));
-      StorageView memory_lengths({batch_size}, DataType::INT32, device);
+      StorageView memory_lengths({static_cast<dim_t>(batch_size)}, DataType::INT32, device);
       memory_lengths.fill(static_cast<int32_t>(memory.dim(1)));
       
       std::vector<std::vector<size_t>> start_ids;
       if (prompts.empty()) {
         // Use default prompt
         std::vector<size_t> default_prompt = build_prompt(options);
-        start_ids.assign(batch_size, default_prompt);
+        start_ids.assign(static_cast<size_t>(batch_size), default_prompt);
       } else {
         start_ids = prompts;
         if (start_ids.size() == 1 && batch_size > 1) {
-          start_ids.assign(batch_size, start_ids[0]);
+          start_ids.assign(static_cast<size_t>(batch_size), start_ids[0]);
         }
       }
       
@@ -272,7 +272,7 @@ namespace ctranslate2 {
       }
       
       // Generate with each language prompt and compare scores
-      std::vector<std::vector<std::pair<std::string, float>>> results(batch_size);
+      std::vector<std::vector<std::pair<std::string, float>>> results(static_cast<size_t>(batch_size));
       
       for (size_t i = 0; i < lang_prompts.size(); ++i) {
         const std::string& lang = _model->get_supported_languages()[i];
@@ -284,7 +284,7 @@ namespace ctranslate2 {
         options.max_length = 10;  // Short generation for language detection
         options.return_scores = true;
         
-        std::vector<std::vector<size_t>> prompts(batch_size, lang_prompts[i]);
+        std::vector<std::vector<size_t>> prompts(static_cast<size_t>(batch_size), lang_prompts[i]);
         auto gen_results = generate(memory.to(memory.device()), prompts, options);
         
         for (dim_t b = 0; b < batch_size; ++b) {

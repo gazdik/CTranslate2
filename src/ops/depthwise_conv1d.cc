@@ -51,7 +51,7 @@ namespace ctranslate2 {
 
       const dim_t output_length = (input_length + 2 * _padding - _dilation * (kernel_size - 1) - 1) / _stride + 1;
 
-      Shape output_shape = {batch_size, output_length, output_depth};
+      Shape output_shape = {static_cast<dim_t>(batch_size), static_cast<dim_t>(output_length), static_cast<dim_t>(output_depth)};
       output = StorageView(output_shape, dtype, device);
 
       if (device == Device::CUDA) {
