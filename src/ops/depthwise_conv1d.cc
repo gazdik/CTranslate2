@@ -95,7 +95,7 @@ namespace ctranslate2 {
                 if (input_pos >= 0 && input_pos < input_length) {
                   const dim_t input_idx = b * input_length * input_depth + input_pos * input_depth + c;
                   const dim_t weight_idx = k * input_depth + c;
-                  sum += input_data[input_idx] * weight_data[weight_idx];
+                  sum += T(input_data[input_idx] * weight_data[weight_idx]);
                 }
               }
               
