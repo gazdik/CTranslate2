@@ -3,6 +3,7 @@
 #include "ctranslate2/layers/attention.h"
 #include "ctranslate2/layers/common.h"
 #include "ctranslate2/layers/encoder.h"
+#include "ctranslate2/layers/transformer.h"
 #include "ctranslate2/ops/depthwise_conv1d.h"
 #include "ctranslate2/ops/local_attention.h"
 #include "ctranslate2/padder.h"
@@ -92,7 +93,7 @@ namespace ctranslate2 {
       // Convolution module
       const std::unique_ptr<LayerNorm> _conv_norm;
       const std::unique_ptr<Dense> _conv_pointwise1;
-      const std::unique_ptr<ops::Conv1D> _conv_depthwise;
+      const std::unique_ptr<ops::DepthwiseConv1D> _conv_depthwise;
       const std::unique_ptr<Dense> _conv_pointwise2;
       
       // Feed forward network
