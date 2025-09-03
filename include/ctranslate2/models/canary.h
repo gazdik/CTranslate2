@@ -78,6 +78,8 @@ namespace ctranslate2 {
 
     class CanaryModel : public Model {
     public:
+      virtual ~CanaryModel() = default;
+      
       const Vocabulary& get_vocabulary() const;
 
       size_t current_spec_revision() const override;
