@@ -125,6 +125,7 @@ set(SOURCES
   src/generator.cc
   src/layers/attention_layer.cc
   src/layers/attention.cc
+  src/layers/fastconformer.cc
   src/layers/flash_attention.cc
   src/layers/common.cc
   src/layers/decoder.cc
@@ -133,6 +134,7 @@ set(SOURCES
   src/layers/wav2vec2bert.cc
   src/layers/whisper.cc
   src/logging.cc
+  src/models/canary.cc
   src/models/language_model.cc
   src/models/model.cc
   src/models/model_factory.cc
@@ -153,6 +155,7 @@ set(SOURCES
   src/ops/conv1d.cc
   src/ops/conv1d_cpu.cc
   src/ops/cos.cc
+  src/ops/depthwise_conv1d.cc
   src/ops/dequantize.cc
   src/ops/dequantize_cpu.cc
   src/ops/flash_attention.cc
@@ -165,6 +168,7 @@ set(SOURCES
   src/ops/gumbel_max_cpu.cc
   src/ops/layer_norm.cc
   src/ops/layer_norm_cpu.cc
+  src/ops/local_attention.cc
   src/ops/log.cc
   src/ops/matmul.cc
   src/ops/mean.cc
