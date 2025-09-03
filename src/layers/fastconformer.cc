@@ -169,7 +169,7 @@ namespace ctranslate2 {
       _layers.reserve(num_layers);
       for (dim_t b = 0; b < batch_size; ++b) {
         for (dim_t i = 0; i < num_layers; ++i) {
-          const std::string layer_scope = scope + "/layers/" + std::to_string(i);
+          const std::string layer_scope = scope + "/layers/" + std::to_string(static_cast<int>(i));
           _layers.emplace_back(std::make_unique<FastConformerEncoderLayer>(
             model, layer_scope, num_heads, window_size, use_global_token));
         }

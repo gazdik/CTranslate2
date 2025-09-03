@@ -88,7 +88,7 @@ namespace ctranslate2 {
     StorageView CanaryReplica::maybe_encode(StorageView features) {
       if (features.rank() != 3) {
         throw std::invalid_argument("Expected audio features to have 3 dimensions (batch, time, features), "
-                                    "but got " + std::to_string(features.rank()) + " dimension(s)");
+                                    "but got " + std::to_string(static_cast<int>(features.rank())) + " dimension(s)");
       }
 
       const Device device = features.device();
@@ -98,8 +98,8 @@ namespace ctranslate2 {
       const dim_t feature_dim = features.dim(2);
 
       if (feature_dim != static_cast<dim_t>(_n_mels)) {
-        throw std::invalid_argument("Expected audio features to have " + std::to_string(_n_mels) +
-                                    " features, but got " + std::to_string(feature_dim));
+        throw std::invalid_argument("Expected audio features to have " + std::to_string(static_cast<int>(_n_mels)) +
+                                    " features, but got " + std::to_string(static_cast<int>(feature_dim)));
       }
 
       StorageView lengths({batch_size}, DataType::INT32, device);
