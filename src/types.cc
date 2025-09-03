@@ -21,6 +21,8 @@ namespace ctranslate2 {
       return "int16";
     case DataType::INT32:
       return "int32";
+    case DataType::INT64:
+      return "int64";
     case DataType::FLOAT16:
       return "float16";
     case DataType::BFLOAT16:
