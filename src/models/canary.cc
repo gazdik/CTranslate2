@@ -103,7 +103,7 @@ namespace ctranslate2 {
       }
 
       StorageView lengths({batch_size}, DataType::INT32, device);
-      lengths.fill(time_dim);
+      lengths.fill(static_cast<int32_t>(time_dim));
 
       StorageView encoded(dtype, device);
       (*_encoder)(features, lengths, encoded);
@@ -191,7 +191,7 @@ namespace ctranslate2 {
       
       StorageView memory = maybe_encode(std::move(features));
       StorageView memory_lengths({batch_size}, DataType::INT32, device);
-      memory_lengths.fill(memory.dim(1));
+      memory_lengths.fill(static_cast<int32_t>(memory.dim(1)));
       
       std::vector<std::vector<size_t>> start_ids;
       if (prompts.empty()) {

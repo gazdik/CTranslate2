@@ -18,6 +18,7 @@ namespace ctranslate2 {
     INT8,
     INT16,
     INT32,
+    INT64,
     FLOAT16,
     BFLOAT16,
   };
