@@ -52,7 +52,7 @@ namespace ctranslate2 {
       const dim_t output_length = (input_length + 2 * _padding - _dilation * (kernel_size - 1) - 1) / _stride + 1;
 
       Shape output_shape = {batch_size, output_length, output_depth};
-      output.resize(output_shape, dtype);
+      output = StorageView(output_shape, dtype, device);
 
       if (device == Device::CUDA) {
 #ifdef CT2_WITH_CUDA
@@ -70,7 +70,7 @@ namespace ctranslate2 {
                                   const StorageView& weight,
                                   const StorageView* bias,
                                   StorageView& output,
-                                  const StorageView* qscale) const {
+                                  const StorageView* /*qscale*/) const {
       const dim_t batch_size = input.dim(0);
       const dim_t input_length = input.dim(1);
       const dim_t input_depth = input.dim(2);
@@ -116,8 +116,8 @@ namespace ctranslate2 {
                                               const StorageView* qscale) const;
 
     DECLARE_IMPL(float)
-    DECLARE_IMPL(float16)
-    DECLARE_IMPL(bfloat16)
+    DECLARE_IMPL(float16_t)
+    DECLARE_IMPL(bfloat16_t)
 
   }
 }
