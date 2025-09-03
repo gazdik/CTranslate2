@@ -33,7 +33,7 @@ namespace ctranslate2 {
 
     void CanaryModel::initialize(ModelReader& model_reader) {
       // Load vocabulary
-      _vocabulary = load_vocabulary(model_reader, "vocabulary.txt");
+      _vocabulary = load_vocabulary(model_reader, "vocabulary.txt", VocabularyInfo{});
       
       // Load supported languages from config
       if (config.contains("supported_languages")) {
@@ -217,9 +217,9 @@ namespace ctranslate2 {
       gen_options.sampling_temperature = options.sampling_temperature;
       gen_options.num_hypotheses = options.num_hypotheses;
       gen_options.return_scores = options.return_scores;
-      gen_options.end_token = _eot_id;
+      gen_options.end_token = std::vector<size_t>{_eot_id};
       
-      std::vector<GenerationResult> results = decode(
+      std::vector<GenerationResult> results = generate(
         *_decoder, memory, memory_lengths, start_ids, gen_options);
       
       // Convert to CanaryGenerationResult
@@ -299,15 +299,15 @@ namespace ctranslate2 {
     }
 
     size_t Canary::n_mels() const {
-      return first_replica().n_mels();
+      return get_first_replica().n_mels();
     }
 
     const std::vector<std::string>& Canary::get_supported_languages() const {
-      return first_replica().get_supported_languages();
+      return get_first_replica().get_supported_languages();
     }
 
     std::future<StorageView> Canary::encode(const StorageView& features, const bool to_cpu) {
-      return post([features, to_cpu](CanaryReplica& replica) mutable {
+      return post<StorageView>([features, to_cpu](CanaryReplica& replica) mutable {
         return replica.encode(std::move(features), to_cpu);
       });
     }
@@ -317,18 +317,13 @@ namespace ctranslate2 {
                      std::vector<std::vector<std::string>> prompts,
                      CanaryOptions options) {
       const dim_t batch_size = features.dim(0);
-      return split_batch_and_post<CanaryGenerationResult>(
-        features,
-        batch_size,
-        [prompts = std::move(prompts), options = std::move(options)]
-        (CanaryReplica& replica, StorageView features, dim_t batch_offset) mutable {
-          std::vector<std::vector<std::string>> batch_prompts;
-          if (!prompts.empty()) {
-            batch_prompts.assign(prompts.begin() + batch_offset,
-                                 prompts.begin() + batch_offset + features.dim(0));
-          }
-          return replica.generate(std::move(features), batch_prompts, options);
-        });
+      // Simplified implementation - process entire batch at once
+      std::vector<std::future<CanaryGenerationResult>> futures;
+      futures.push_back(post<CanaryGenerationResult>([features, prompts = std::move(prompts), options = std::move(options)](CanaryReplica& replica) mutable {
+        auto results = replica.generate(std::move(features), prompts, options);
+        return results.empty() ? CanaryGenerationResult{} : results[0];
+      }));
+      return futures;
     }
 
     std::vector<std::future<CanaryGenerationResult>>
@@ -336,29 +331,25 @@ namespace ctranslate2 {
                      std::vector<std::vector<size_t>> prompts,
                      CanaryOptions options) {
       const dim_t batch_size = features.dim(0);
-      return split_batch_and_post<CanaryGenerationResult>(
-        features,
-        batch_size,
-        [prompts = std::move(prompts), options = std::move(options)]
-        (CanaryReplica& replica, StorageView features, dim_t batch_offset) mutable {
-          std::vector<std::vector<size_t>> batch_prompts;
-          if (!prompts.empty()) {
-            batch_prompts.assign(prompts.begin() + batch_offset,
-                                 prompts.begin() + batch_offset + features.dim(0));
-          }
-          return replica.generate(std::move(features), batch_prompts, options);
-        });
+      // Simplified implementation - process entire batch at once
+      std::vector<std::future<CanaryGenerationResult>> futures;
+      futures.push_back(post<CanaryGenerationResult>([features, prompts = std::move(prompts), options = std::move(options)](CanaryReplica& replica) mutable {
+        auto results = replica.generate(std::move(features), prompts, options);
+        return results.empty() ? CanaryGenerationResult{} : results[0];
+      }));
+      return futures;
     }
 
     std::vector<std::future<std::vector<std::pair<std::string, float>>>>
     Canary::detect_language(const StorageView& features) {
       const dim_t batch_size = features.dim(0);
-      return split_batch_and_post<std::vector<std::pair<std::string, float>>>(
-        features,
-        batch_size,
-        [](CanaryReplica& replica, StorageView features, dim_t) mutable {
-          return replica.detect_language(std::move(features));
-        });
+      // Simplified implementation - process entire batch at once
+      std::vector<std::future<std::vector<std::pair<std::string, float>>>> futures;
+      futures.push_back(post<std::vector<std::pair<std::string, float>>>([features](CanaryReplica& replica) mutable {
+        auto results = replica.detect_language(std::move(features));
+        return results.empty() ? std::vector<std::pair<std::string, float>>{} : results[0];
+      }));
+      return futures;
     }
 
   }

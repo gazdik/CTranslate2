@@ -69,8 +69,8 @@ namespace ctranslate2 {
     FastConformerEncoderLayer::FastConformerEncoderLayer(const models::Model& model,
                                                          const std::string& scope,
                                                          const dim_t num_heads,
-                                                         const dim_t window_size,
-                                                         const bool use_global_token,
+                                                         const dim_t /*window_size*/,
+                                                         const bool /*use_global_token*/,
                                                          const bool pre_norm,
                                                          const ops::ActivationType activation_type)
       : _self_attn_layer_norm(build_optional_layer<LayerNorm>(model, scope + "/self_attn_layer_norm"))
@@ -164,18 +164,32 @@ namespace ctranslate2 {
       const dim_t num_heads = model.config["encoder"]["num_heads"];
       const dim_t window_size = model.config.value("encoder/window_size", -1);
       const bool use_global_token = model.config.value("encoder/use_global_token", false);
+      const dim_t batch_size = model.config.value("batch_size", 1);
       
       _layers.reserve(num_layers);
-      for (dim_t i = 0; i < num_layers; ++i) {
-        const std::string layer_scope = scope + "/layers/" + std::to_string(i);
-        _layers.emplace_back(std::make_unique<FastConformerEncoderLayer>(
-          model, layer_scope, num_heads, window_size, use_global_token));
+      for (dim_t b = 0; b < batch_size; ++b) {
+        for (dim_t i = 0; i < num_layers; ++i) {
+          const std::string layer_scope = scope + "/layers/" + std::to_string(i);
+          _layers.emplace_back(std::make_unique<FastConformerEncoderLayer>(
+            model, layer_scope, num_heads, window_size, use_global_token));
+        }
       }
     }
 
     void FastConformerEncoder::operator()(const StorageView& features,
                                           const StorageView& lengths,
                                           StorageView& output) {
+      operator()({features}, &lengths, output);
+    }
+
+    void FastConformerEncoder::operator()(const std::vector<StorageView>& ids,
+                                          const StorageView* lengths,
+                                          StorageView& output) {
+      if (ids.empty()) {
+        throw std::invalid_argument("Input ids vector is empty");
+      }
+      
+      const StorageView& features = ids[0];
       PROFILE("FastConformerEncoder");
       
       const Device device = features.device();

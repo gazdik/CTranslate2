@@ -111,6 +111,11 @@ namespace ctranslate2 {
                       const StorageView& lengths,
                       StorageView& output) override;
 
+    protected:
+      void operator()(const std::vector<StorageView>& ids,
+                      const StorageView* lengths,
+                      StorageView& output) override;
+
       DataType output_type() const override {
         return _layers.back()->output_type();
       }
