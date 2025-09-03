@@ -26,7 +26,7 @@ namespace ctranslate2 {
       PROFILE("LocalAttention");
 
       const Device device = queries.device();
-      const DataType dtype = queries.dtype();
+      // const DataType dtype = queries.dtype(); // Unused
 
       if (device == Device::CUDA) {
 #ifdef CT2_WITH_CUDA
@@ -45,18 +45,18 @@ namespace ctranslate2 {
     void LocalAttention::compute(const StorageView& queries,
                                  const StorageView& keys,
                                  const StorageView& values,
-                                 const StorageView* lengths,
+                                 const StorageView* /*lengths*/,
                                  StorageView& output,
-                                 StorageView* cached_keys,
-                                 StorageView* cached_values,
-                                 StorageView* attention_weights) const {
+                                 StorageView* /*cached_keys*/,
+                                 StorageView* /*cached_values*/,
+                                 StorageView* /*attention_weights*/) const {
       const dim_t batch_size = queries.dim(0);
       const dim_t seq_len = queries.dim(1);
       const dim_t head_dim = queries.dim(2) / _num_heads;
 
       const T scale = _scale > 0 ? _scale : T(1) / std::sqrt(static_cast<T>(head_dim));
 
-      output.resize(queries.shape(), queries.dtype());
+      output = StorageView(queries.shape(), queries.dtype(), queries.device());
 
       if (D == Device::CPU) {
         // CPU implementation of local attention
@@ -136,8 +136,8 @@ namespace ctranslate2 {
                                              StorageView* attention_weights) const;
 
     DECLARE_IMPL(float)
-    DECLARE_IMPL(float16)
-    DECLARE_IMPL(bfloat16)
+    DECLARE_IMPL(float16_t)
+    DECLARE_IMPL(bfloat16_t)
 
   }
 }
