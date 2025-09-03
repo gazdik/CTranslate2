@@ -44,3 +44,5 @@
 #include "awq/gemv.h"
 #include "awq/dequantize_awq.h"
 #include "sum.h"
+#include "depthwise_conv1d.h"
+#include "local_attention.h"

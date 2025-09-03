@@ -2,5 +2,6 @@
 
 #include "attention.h"
 #include "flash_attention.h"
-#include "common.h"
+#include "whisper.h"
+#include "fastconformer.h"
 #include "transformer.h"
