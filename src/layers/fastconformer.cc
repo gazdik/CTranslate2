@@ -219,7 +219,7 @@ namespace ctranslate2 {
       // Apply encoder layers
       StorageView layer_output(dtype, device);
       for (const auto& layer : _layers) {
-        (*layer)(x, &lengths, layer_output);
+        (*layer)(x, lengths, layer_output);
         x = std::move(layer_output);
         layer_output = StorageView(dtype, device);
       }
